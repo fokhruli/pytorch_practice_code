@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-
+import matplotlib.pyplot as plt
 class LR(nn.Module):
     def __init__(self, input_size, output_size):
         super().__init__()
@@ -12,5 +12,7 @@ class LR(nn.Module):
 torch.manual_seed(1)
 model = LR(1, 1)
 
-x = torch.tensor([[2.0], [3.4]])
+x = torch.randn(100,1)*10
+y = x
+plt.plot(x.numpy(), y.numpy(), 'o')
 print(model.forward(x))
