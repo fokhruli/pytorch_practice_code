@@ -95,6 +95,33 @@ y = torch.rand(size=(batch,n,p))
 
 z = torch.bmm(x,y)
 # ex
+
+# "  sum, max, min, argmax, argmin, abs, eq, sort " function also work
+
+# clamp a tensor
+
+y= torch.tensor([[-0.5,0.2,1], [3,2,-0.1], [30,20,-1]])
+
+y = torch.clamp(y, min=0, max=10) # important op.
+
+# tensor .all and .any function
+
+y = torch.tensor([1,0,1,1], dtype=torch.bool)
+# print(torch.any(y)) # true
+# print(torch.all(y)) # False
+
+
+################################# tensor indexing #############################
+
+x =  torch.arange(10)
+index = torch.tensor([2,3,5])
+x = torch.rand(5,6)
+row = torch.tensor([4,0])
+col = torch.tensor([4,0])
+x =  torch.arange(10)
+#print(x[(x<2) | (x>7)])
+#print(x[x.remainder(2) == 0])
+y = torch.rand(size=(batch,n,p))
+print(y.shape)
+z = y.reshape(-1, batch,n,p)
 print(z.shape)
-
-
