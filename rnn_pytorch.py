@@ -9,38 +9,41 @@ from torch.utils.data import DataLoader
 import torchvision.datasets as datasets
 import torchvision.transforms as transforms
 
+# init device
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print(f'running device is {device}....')
+# hyperparameter
+input_size = 28
+sequence_length = 28
+hidden_size = 256
+num_layers = 2
+channel = 1
+num_class = 10
+learning_rate = 0.001
+batch_size = 64
 
 # crate cn - net
 
-class CNN(nn.Module):
-    def __init__(self, channel = 1, num_class = 10):
-        super(CNN, self).__init__()
-        self.conv1 = nn.Conv2d(in_channels=channel, out_channels=8, kernel_size=(3,3), stride=(1,1), padding=(1,1))
-        self.pool = nn.MaxPool2d(kernel_size=(2,2), stride=(2,2))
-        self.conv2 = nn.Conv2d(in_channels=8, out_channels=16, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
-        self.fc1 = nn.Linear(16*7*7, num_class)
+class RNN(nn.Module):
+    def __init__(self, input_size, hidden_size, num_layers, num_class):
+        super(RNN, self).__init__()
+        self.hidden_size = hidden_size
+        self.num_layers = num_layers
+        self.rnn = nn.RNN(input_size, hidden_size, num_layers, batch_first=True)
+        self.fc =  nn.Linear(hidden_size*sequence_length, num_class)
     def forward(self, x):
-        x =  F.relu(self.conv1(x))
-        x = self.pool(x)
-        x = F.relu(self.conv2(x))
-        x = self.pool(x)
-        x = x.reshape(x.shape[0], -1)
-        x = self.fc1(x)
-        return x
+        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(device)
+        out, _ = self.rnn(x, h0)
+        out = out.reshape(out.shape[0], -1)
+        out = self.fc(out)
+        return out
 #model = CNN(channel = 1, num_class = 10)
 
 #x = torch.randn(64, 1, 28, 28)
 #print(model(x).shape)
 
-# init device
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-print(f'running device is {device}....')
-# hyperparameter
-channel = 1
-num_class = 10
-learning_rate = 0.001
-batch_size = 64
-epoch = 1
+
+num_epochs = 1
 
 # load data
 train_dataset = datasets.MNIST(root='dataset/', train=True, transform=transforms.ToTensor(), download=True)
