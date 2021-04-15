@@ -29,11 +29,12 @@ class RNN(nn.Module):
         super(RNN, self).__init__()
         self.hidden_size = hidden_size
         self.num_layers = num_layers
-        self.rnn = nn.RNN(input_size, hidden_size, num_layers, batch_first=True)
+        self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True)
         self.fc =  nn.Linear(hidden_size*sequence_length, num_class)
     def forward(self, x):
         h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(device)
-        out, _ = self.rnn(x, h0)
+        c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(device)
+        out, _ = self.lstm(x, (h0, c0))
         out = out.reshape(out.shape[0], -1)
         out = self.fc(out)
         return out
@@ -53,16 +54,16 @@ test_dataset = datasets.MNIST(root='dataset/', train=False, transform=transforms
 test_loader = DataLoader(dataset=test_dataset, batch_size=batch_size, shuffle=True)
 
 # init net
-model = CNN().to(device)
+model = RNN(input_size, hidden_size, num_layers, num_class).to(device)
 
 # loss and optimizer
 criterion = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 # load network
 
-for e in range(epoch):
+for e in range(num_epochs):
     for batch_idx, (data, targets) in enumerate(train_loader):
-        data = data.to(device)
+        data = data.to(device).squeeze(1)
         targets = targets.to(device)
 
         # forward pass
@@ -90,7 +91,7 @@ def check_scores(data_loader, model):
 
     with torch.no_grad():
         for x, y in data_loader:
-            x = x.to(device)
+            x = x.to(device).squeeze(1)
             y = y.to(device)
 
             # forward pass
